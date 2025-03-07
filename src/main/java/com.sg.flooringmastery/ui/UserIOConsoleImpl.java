@@ -13,9 +13,10 @@ public class UserIOConsoleImpl implements UserIO {
 
     @Override
     public String readString(String prompt) {
-        print(prompt);
+        System.out.print(prompt);
         return scanner.nextLine();
     }
+
 
     @Override
     public int readInt(String prompt) {

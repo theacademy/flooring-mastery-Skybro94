@@ -58,4 +58,14 @@ public class FlooringMasteryView {
     public void displayMessage(String msg) {
         io.print(msg);
     }
+
+    public boolean getConfirmation(String message) {
+        return io.readString(message + " (Y/N): ").trim().equalsIgnoreCase("Y");
+    }
+
+    public void displayOrder(Order order) {
+        io.print("Order #" + order.getOrderNumber() + " | Customer: " + order.getCustomerName() +
+                " | Product: " + order.getProductType() + " | Total: $" + order.getTotal());
+    }
+
 }

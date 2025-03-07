@@ -33,8 +33,9 @@ public class FlooringMasteryServiceImpl implements FlooringMasteryService {
     }
 
     @Override
-    public void removeOrder(int orderNumber) {
-        orderDao.removeOrder(orderNumber);
+    public boolean removeOrder(String date, int orderNumber) {
+        orderDao.removeOrder(date,orderNumber);
+        return false;
     }
 
     @Override

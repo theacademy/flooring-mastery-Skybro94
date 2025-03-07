@@ -1,5 +1,7 @@
 package com.sg.flooringmastery.controller;
 
+import java.util.List;
+import com.sg.flooringmastery.dto.Order;
 import com.sg.flooringmastery.service.FlooringMasteryService;
 import com.sg.flooringmastery.ui.FlooringMasteryView;
 import org.springframework.stereotype.Component;
@@ -46,9 +48,43 @@ public class FlooringMasteryController {
     }
 
     private void removeOrder() {
+        String date = view.getDateInput();
         int orderNumber = view.getOrderNumber();
-        service.removeOrder(orderNumber);
+
+        // get orders
+        List<Order> orders = service.getOrders(date);
+        Order orderToRemove = null;
+        for (Order order : orders) {
+            if (order.getOrderNumber() == orderNumber) {
+                orderToRemove = order;
+                break;
+            }
+        }
+
+        if (orderToRemove == null) {
+            view.displayMessage("Order #" + orderNumber + " not found on " + date + ". Returning to main menu...");
+            return;
+        }
+
+        view.displayMessage("Order found:");
+        view.displayOrder(orderToRemove);
+        boolean confirm = view.getConfirmation("Are you sure you want to remove this order? (Y/N)");
+
+        if (!confirm) {
+            view.displayMessage("Order removal cancelled. Returning to main menu...");
+            return;
+        }
+
+        // call DAO to delete the order
+        boolean removed = service.removeOrder(date, orderNumber);
+
+        if (removed) {
+            view.displayMessage("Order #" + orderNumber + " successfully removed!");
+        } else {
+            view.displayMessage("Error: Could not remove order. Returning to main menu...");
+        }
     }
+
 
     private void exportData() {
         service.exportData();

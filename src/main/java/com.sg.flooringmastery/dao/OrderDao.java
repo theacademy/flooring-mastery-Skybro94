@@ -7,6 +7,6 @@ public interface OrderDao {
     List<Order> getOrders(String date);
     void addOrder(Order order);
     void updateOrder(int orderNumber, Order order);
-    void removeOrder(int orderNumber);
+    boolean removeOrder(String date, int orderNumber);
     void exportData();
 }

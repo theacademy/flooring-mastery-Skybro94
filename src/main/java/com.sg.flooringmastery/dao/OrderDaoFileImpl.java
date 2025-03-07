@@ -47,13 +47,37 @@ public class OrderDaoFileImpl implements OrderDao {
     }
 
     @Override
-    public void removeOrder(int orderNumber) {
-        for (String date : orders.keySet()) {
-            List<Order> orderList = orders.get(date);
-            orderList.removeIf(order -> order.getOrderNumber() == orderNumber);
-            saveOrders(date);
+    public boolean removeOrder(String date, int orderNumber) {
+        List<Order> orderList = orders.get(date);
+
+        // if no order at this date, let Controller handle
+        if (orderList == null || orderList.isEmpty()) {
+            return false;
         }
+
+        Order orderToRemove = null;
+        for (Order order : orderList) {
+            if (order.getOrderNumber() == orderNumber) {
+                orderToRemove = order;
+                break;
+            }
+        }
+
+        // if order doesn't exist, let Controller handle
+        if (orderToRemove == null) {
+            return false;
+        }
+
+        orderList.remove(orderToRemove);
+
+        if (orderList.isEmpty()) {
+            orders.remove(date);
+        }
+
+        saveOrders(date);
+        return true;
     }
+
 
     @Override
     public void exportData() {

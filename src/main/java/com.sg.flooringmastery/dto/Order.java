@@ -72,4 +72,8 @@ public class Order {
     public String getProductType() {
         return productType;
     }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
 }
