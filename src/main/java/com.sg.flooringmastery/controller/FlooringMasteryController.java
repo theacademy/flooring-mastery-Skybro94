@@ -1,7 +1,10 @@
 package com.sg.flooringmastery.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
+
 import com.sg.flooringmastery.dto.Order;
+import com.sg.flooringmastery.dto.Product;
 import com.sg.flooringmastery.service.FlooringMasteryService;
 import com.sg.flooringmastery.ui.FlooringMasteryView;
 import org.springframework.stereotype.Component;
@@ -35,31 +38,72 @@ public class FlooringMasteryController {
 
     private void displayOrders() {
         String date = view.getDateInput();
-        view.displayOrders(service.getOrders(date));
+        List<Order> orders = service.getOrders(date);
+
+        if (orders.isEmpty()) {
+            view.displayMessage("No orders found for " + date + ". Returning to main menu...");
+            return;
+        }
+
+        view.displayOrders(orders);
     }
 
     private void addOrder() {
-        service.addOrder(view.getOrderDetails());
+        String date = view.getFutureDateInput();
+        String customerName = view.getValidatedCustomerName();
+
+        List<String> validStates = service.getAllValidStates();
+        String state = view.getStateInput(validStates);
+
+        List<Product> productList = service.getAllProducts();
+        String productType = view.getProductChoice(productList);
+
+        BigDecimal area = view.getValidatedAreaInput();
+
+        Order newOrder = service.createOrder(date, customerName, state, productType, area);
+
+        view.displayOrder(newOrder);
+        boolean confirm = view.getConfirmation("Do you want to place this order?");
+
+        if (!confirm) {
+            view.displayMessage("Order cancelled. Returning to main menu...");
+            return;
+        }
+
+        service.addOrder(newOrder);
+        view.displayMessage("Order placed successfully!");
     }
 
     private void editOrder() {
+        String date = view.getDateInput();
         int orderNumber = view.getOrderNumber();
-        service.editOrder(orderNumber, view.getOrderDetails());
+
+        Order existingOrder = service.getOrder(date, orderNumber);
+        if (existingOrder == null) {
+            view.displayMessage("Order not found. Returning to main menu...");
+            return;
+        }
+
+        List<Product> productList = service.getAllProducts();
+        Order updatedOrder = view.getUpdatedOrder(existingOrder, productList);
+
+        view.displayOrder(updatedOrder);
+        boolean confirm = view.getConfirmation("Do you want to save these changes? ");
+
+        if (!confirm) {
+            view.displayMessage("Edit cancelled. Returning to main menu...");
+            return;
+        }
+
+        service.saveOrder(updatedOrder);
+        view.displayMessage("Order updated successfully!");
     }
 
     private void removeOrder() {
         String date = view.getDateInput();
         int orderNumber = view.getOrderNumber();
 
-        // get orders
-        List<Order> orders = service.getOrders(date);
-        Order orderToRemove = null;
-        for (Order order : orders) {
-            if (order.getOrderNumber() == orderNumber) {
-                orderToRemove = order;
-                break;
-            }
-        }
+        Order orderToRemove = service.getOrder(date, orderNumber);
 
         if (orderToRemove == null) {
             view.displayMessage("Order #" + orderNumber + " not found on " + date + ". Returning to main menu...");
@@ -68,14 +112,13 @@ public class FlooringMasteryController {
 
         view.displayMessage("Order found:");
         view.displayOrder(orderToRemove);
-        boolean confirm = view.getConfirmation("Are you sure you want to remove this order? (Y/N)");
+        boolean confirm = view.getConfirmation("Are you sure you want to remove this order?");
 
         if (!confirm) {
             view.displayMessage("Order removal cancelled. Returning to main menu...");
             return;
         }
 
-        // call DAO to delete the order
         boolean removed = service.removeOrder(date, orderNumber);
 
         if (removed) {
@@ -84,7 +127,6 @@ public class FlooringMasteryController {
             view.displayMessage("Error: Could not remove order. Returning to main menu...");
         }
     }
-
 
     private void exportData() {
         service.exportData();

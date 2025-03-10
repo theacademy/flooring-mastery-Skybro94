@@ -34,4 +34,11 @@ public class TaxDaoFileImpl implements TaxDao {
             System.err.println("Error: Tax file not found.");
         }
     }
+
+    @Override
+    public List<String> getAllStates() {
+        return new ArrayList<>(taxes.keySet());  // return all `stateAbbreviation`
+    }
+
+
 }
